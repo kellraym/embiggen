@@ -10,7 +10,21 @@ typedef struct Money
 {
     int dollars;
     int8_t cents;
+    void (*free_me)(struct Money *m);
 } Money;
+
+void free_money(Money *m)
+{
+    free(m);
+}
+Money *make_money(int dollars, int8_t cents)
+{
+    Money *m = malloc(sizeof(Money));
+    m->dollars = dollars;
+    m->cents = cents;
+    m->free_me = free_money;
+    return m;
+}
 
 char *options[] = 
 {
