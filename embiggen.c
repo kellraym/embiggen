@@ -6,44 +6,6 @@
 
 #define NUM_OPTIONS 3
 
-typedef struct Money
-{
-    int dollars;
-    int8_t cents;
-    void (*free_me)(struct Money *m);
-} Money;
-
-void free_money(Money *m)
-{
-    free(m);
-}
-
-Money *make_money(int dollars, int8_t cents)
-{
-    Money *m = malloc(sizeof(Money));
-    m->dollars = dollars;
-    m->cents = cents;
-    m->free_me = free_money;
-    return m;
-}
-
-void add_money()
-{
-    // TODO: implement this
-}
-
-void subtract_money()
-{
-    // TODO: implement this
-}
-
-char *options[] = 
-{
-    "0. Quit",
-    "1. Save ten cents", // refactor to make this, look for change. finds a random amount of money between 0.00 and 1.00
-    "2. Buy lemonade stand",
-};
-
 void clrscr()
 {
     system("clear");
@@ -72,7 +34,7 @@ void print_options(Money *total)
     }
 }
 
-bool_R execute_option(int option, Money *total, Money *income)
+bool_R execute_option(int8_t option, Money *total, Money *income)
 {
     // TODO: raise the prices of purchased stuff
     // TODO: add options to buy/upgrade stuff
@@ -107,7 +69,7 @@ bool_R execute_option(int option, Money *total, Money *income)
     return true;
 }
 
-int get_option(float *total, float *income)
+int get_option(Money *total, Money *income)
 {
     // TODO: take arguments specifying available options
     // TODO: incorporate q/Q as quit option
