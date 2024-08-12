@@ -6,8 +6,6 @@
 
 typedef struct Money Money;
 
-void free_money(Money *m);
-// frees money struct
 Money *make_money(uint64_t dollars, uint8_t cents, bool_R is_negative);
 // returns an initialized Money struct
 // adds free_money as m->free_me

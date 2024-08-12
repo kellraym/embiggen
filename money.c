@@ -37,44 +37,6 @@ void print_money(Money *m)
     printf("$%ld.%u", m->dollars, m->cents);
 }
 
-void subtract_money(Money *m1, Money *m2)
-{
-    // TODO: implement this
-    if (m1->dollars >= m2->dollars) // TODO: double check this i.e. 0.5 - 0.6
-    {
-        if (m1->cents < m2->cents)
-        {
-            m1->dollars -= 1;
-            if (m1->dollars < 0)
-            {
-                m1->cents = m2->cents - m1->cents;
-            }
-            else
-            {
-                uint8_t remainder = m2->cents - m1->cents;
-                m1->cents = 100 - remainder;
-            }
-        }
-        else
-        {
-            m1->cents -= m2->cents;
-        }
-    }
-    else
-    {
-        m1->dollars = (m2->dollars - m1->dollars) * -1;
-        if (m1->cents < m2->cents)
-        {
-            uint8_t remainder = m2->cents - m1->cents;
-            m1->cents = 100 - remainder;
-        }
-        else
-        {
-            m1->cents += m2->cents;
-        }
-    }
-}
-
 void add_pos_pos(Money *m1, Money *m2)
 {
     m1->dollars += m2->dollars;
@@ -86,6 +48,63 @@ void add_pos_pos(Money *m1, Money *m2)
     }
 }
 
+// this is the actual subtraction function
+void add_pos_neg(Money *m1, Money *m2)
+{
+    if (m1->cents >= m2->cents)
+    {
+        m1->cents -= m2->cents;
+    }
+    else
+    {
+        if (m1->dollars == 0)
+        {
+            m1->cents = m2->cents - m1->cents;
+            m1->is_positive = false;
+        }
+        else
+        {
+            m1->cents = 100 - (m2->cents - m1->cents);
+            m1->dollars--;
+        }
+    }
+
+    if (m1->is_positive)
+    {
+        if (m1->dollars >= m2->dollars)
+        {
+            m1->dollars -= m2->dollars;
+        } 
+        else
+        {
+            m1->dollars = m2->dollars - m1->dollars - 1;
+            m1->cents = 100 - m1->cents;
+            m1->is_positive = false;
+        }
+    }
+    else
+    {
+        m1->dollars += m2->dollars;
+    }
+    
+}
+
+void add_neg_pos(Money *m1, Money *m2)
+{
+    Money *temp = make_money(m1->dollars, m1->cents, true);
+    
+    m1->dollars = m2->dollars;
+    m1->cents = m2->cents;
+    m1->is_positive = m2->is_positive;
+    
+    add_pos_neg(m1, temp);
+    temp->free_me(temp);
+}
+
+void add_neg_neg(Money *m1, Money *m2)
+{
+    add_pos_pos(m1, m2);
+}
 
 void add_money(Money *m1, Money *m2)
 {
@@ -95,7 +114,22 @@ void add_money(Money *m1, Money *m2)
     }
     else if (m1->is_positive && !m2->is_positive)
     {
-        // TODO: make this work
+        add_pos_neg(m1, m2);
+    }
+    else if (!m1->is_positive && m2->is_positive)
+    {
+        add_neg_pos(m1, m2);
+    }
+    else
+    {
+        add_neg_neg(m1, m2);
     }
 }
 
+void subtract_money(Money *m1, Money *m2)
+{
+    // to subtract, just flip the sign of the second value
+    m2->is_positive = !m2->is_positive;
+    add_money(m1, m2);
+    m2->is_positive = !m2->is_positive;
+}
