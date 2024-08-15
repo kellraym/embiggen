@@ -1,4 +1,5 @@
-typedef enum bool_R { false, true } bool_R ;
+typedef enum bool_R { false, true } bool_R;
+typedef enum comparer_R { less = -1, equal, greater } comparer_R;
 
 char *options[] = 
 {

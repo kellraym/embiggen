@@ -7,6 +7,7 @@
 
 typedef struct Money
 {
+    // TODO: change to allow for increments of 1000, i.e. millions, billions, trillions, etc.
     int64_t dollars;
     uint8_t cents;
     bool_R is_positive;
@@ -30,11 +31,92 @@ Money *make_money(uint64_t dollars, uint8_t cents, bool_R is_positive)
 
 void print_money(Money *m)
 {
+    // TODO: find a better way to do this? don't return a string you have to free
     if (!m->is_positive)
     {
         printf("-");
     }
-    printf("$%ld.%u", m->dollars, m->cents);
+    printf("$%ld.", m->dollars);
+    if (m->cents < 9)
+    {
+        printf("0%u", m->cents);
+    }
+    else
+    {
+        printf("%u", m->cents);
+    }
+    
+}
+
+comparer_R compare_positive(Money *m1, Money *m2)
+{
+    if (m1->dollars > m2->dollars)
+    {
+        return greater;
+    }
+    else if (m1->dollars == m2->dollars)
+    {
+        if (m1->cents > m2->cents)
+        {
+            return greater;
+        }
+        else
+        {
+            return less;
+        }
+    }
+    else
+    {
+        return less;
+    }
+}
+
+comparer_R compare_negative(Money *m1, Money *m2)
+{
+    return compare_positive(m1, m2) * -1;
+}
+
+
+comparer_R compare_same_sign(Money *m1, Money *m2)
+{
+    // TODO: implement this
+    if (m1->is_positive)
+    {
+        return compare_positive(m1, m2);
+    }
+    else
+    {
+        return compare_negative(m1, m2);
+    }
+}
+
+comparer_R compare_money(Money *m1, Money *m2)
+{
+    if (m1->is_positive && !m2->is_positive)
+    {
+        return greater;
+    }
+    else if (!m1->is_positive && m2->is_positive)
+    {
+        return less;
+    }
+    else if (m1->dollars == m2->dollars && m1->cents == m2->cents && m1->is_positive == m2->is_positive)
+    {
+        return equal;
+    }
+    else
+    {
+        return compare_same_sign(m1, m2);
+    }
+    
+}
+
+comparer_R compare_money_val(Money *m, uint64_t dollars, uint8_t cents, bool_R is_positive)
+{
+    Money *temp_money = make_money(dollars, cents, is_positive);
+    comparer_R res = compare_money(m, temp_money);
+    temp_money->free_me(temp_money);
+    return res;
 }
 
 void add_pos_pos(Money *m1, Money *m2)
@@ -128,8 +210,14 @@ void add_money(Money *m1, Money *m2)
 
 void subtract_money(Money *m1, Money *m2)
 {
-    // to subtract, just flip the sign of the second value
     m2->is_positive = !m2->is_positive;
     add_money(m1, m2);
     m2->is_positive = !m2->is_positive;
+}
+
+void add_money_val(Money *m, uint64_t dollars, uint8_t cents, bool_R is_positive)
+{
+    Money *temp_money = make_money(dollars, cents, is_positive);
+    add_money(m, temp_money);
+    temp_money->free_me(temp_money);
 }
